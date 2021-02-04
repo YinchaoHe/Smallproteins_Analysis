@@ -24,14 +24,14 @@ def main():
         pass
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-g", "--getorf", type=bool, required=True)
+    parser.add_argument("-g", "--getorf", type=bool, required=False, default=False)
     parser.add_argument("-gi", "--getorf_in", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.fna')
     parser.add_argument("-gr", "--getorf_result", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')
     parser.add_argument("-gt", "--getorf_table", type=str, required=False, default='1')
     parser.add_argument("-gmi", "--getorf_minsize", type=str, required=False, default='15')
     parser.add_argument("-gma", "--getorf_maxsize", type=str, required=False, default='50')
 
-    parser.add_argument("-c", "--cdhit", type=bool, required=True)
+    parser.add_argument("-c", "--cdhit", type=bool, required=False, default=False)
     parser.add_argument("-cr", "--cdhit_result", type=str, required=False, default='cdhit.result')
     parser.add_argument("-cn", "--cdhit_n", type=str, required=False, default='2')
     parser.add_argument("-cp", "--cdhit_p", type=str, required=False, default='1')
@@ -43,9 +43,9 @@ def main():
     parser.add_argument("-caL", "--cdhit_aL", type=str, required=False, default="0.95")
     parser.add_argument("-cg", "--cdhit_g", type=str, required=False, default="1")
 
-    parser.add_argument("-d", "--diamondp", type=bool, required=True)
-    parser.add_argument("-db", "--dia_db", type=str, required=True)
-    parser.add_argument("-dr", "--dia_result", type=str, required=True, default="no_dia_result")
+    parser.add_argument("-d", "--diamondp", type=bool, required=False, default=False)
+    parser.add_argument("-db", "--dia_db", type=str, required=False, default='/mnt/array2/smallproteins/database/DM_database/SmProt_KnownDatabase.dmnd ')
+    parser.add_argument("-dr", "--dia_result", type=str, required=False, default="cdhited_diamond_KnownDatabase.txt")
 
     args = parser.parse_args()
 
