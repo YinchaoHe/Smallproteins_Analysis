@@ -1,6 +1,6 @@
 import argparse
 import os
-
+import assem_fasta
 
 def my_getorf(getorf_in, getorf_result, getorf_table, getorf_minsize, getorf_maxsize):
     getorf_command = 'getorf -sequence ' + getorf_in + ' ' +  '-outseq' + ' ' + getorf_result + ' ' + '-table' + ' ' + getorf_table
@@ -15,6 +15,13 @@ def my_cdhit(getorf_result, cdhit_result, cdhit_n, cdhit_p, cdhit_c, cdhit_d, cd
 def my_diamond_blastp(dia_db, cdhit_result, dia_result):
     diamond_blastp_command = 'diamond blastp --db ' + dia_db + ' ' + '-q' + ' ' + cdhit_result + ' ' + '-o' + ' ' + dia_result
     os.system(diamond_blastp_command)
+
+def my_signalp(cdhit_result, signalp_org, signalp_format, signalp_result):
+    signalp_command = 'signalp -fasta ' + cdhit_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
+    os.system(signalp_command)
+    path = signalp_result.split('/')[0]
+    signalp_result = signalp_result + '_summary.signalp5'
+    assem_fasta.filter_signalp(path, signalp_result)
 
 def main():
     path = 'intermediate'
@@ -47,31 +54,37 @@ def main():
     parser.add_argument("-db", "--dia_db", type=str, required=False, default='/mnt/array2/smallproteins/database/DM_database/SmProt_KnownDatabase.dmnd ')
     parser.add_argument("-dr", "--dia_result", type=str, required=False, default="cdhited_diamond_KnownDatabase.txt")
 
+    parser.add_argument("-s", "--signalp", type=bool, required=False, default=False)
+    parser.add_argument("-so", "--signalp_org", type=str, required=False, default="gram-" )
+    parser.add_argument("-sf", "--signalp_format", type=str, required=False, default="short")
+    parser.add_argument("-sr", '--signalp_result', type=str, required=False, default="cdhit_result")
     args = parser.parse_args()
 
 
     args.getorf_result = path + '/' + args.getorf_result
     args.cdhit_result = path + '/' + args.cdhit_result
     args.dia_result = path + '/' + args.dia_result
-
+    args.signalp_result = path + '/' + args.signalp_result
 
     if args.getorf == True:
         my_getorf(args.getorf_in, args.getorf_result, args.getorf_table, args.getorf_minsize, args.getorf_maxsize)
     else:
-        print("No getorf")
+        print("************************* No getorf *************************")
 
     if args.cdhit == True:
         my_cdhit(args.getorf_result, args.cdhit_result, args.cdhit_n, args.cdhit_p, args.cdhit_c, args.cdhit_d, args.cdhit_M, args.cdhit_l, args.cdhit_s, args.cdhit_aL, args.cdhit_g)
     else:
-        print("No cdhit")
+        print("************************* No cdhit *************************")
 
     if args.diamondp == True:
         my_diamond_blastp(args.dia_db, args.cdhit_result, args.dia_result)
     else:
-        print("No diamond blastp")
+        print("************************* No diamond blastp *************************")
 
-    
-
+    if args.signalp == True:
+        my_signalp(args.cdhit_result, args.signalp_org, args.signalp_format, args.signalp_result)
+    else:
+        print("************************* No signalp *************************")
 
 
 
