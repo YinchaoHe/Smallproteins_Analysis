@@ -19,9 +19,7 @@ def my_diamond_blastp(dia_db, cdhit_result, dia_result):
 def my_signalp(cdhit_result, signalp_org, signalp_format, signalp_result):
     signalp_command = 'signalp -fasta ' + cdhit_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
     os.system(signalp_command)
-    path = signalp_result.split('/')[0]
-    signalp_result = signalp_result + '_summary.signalp5'
-    assem_fasta.filter_signalp(path, signalp_result)
+    assem_fasta.filter_signalp(signalp_result)
 
 def main():
     path = 'intermediate'

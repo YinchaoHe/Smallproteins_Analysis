@@ -30,12 +30,16 @@ def extract_ids(path, in_file_name, out_id_file_name):
             output_file.write(id + '\n')
         output_file.close()
 
-def filter_signalp(path, signalp_result):
+def filter_signalp(signalp_result):
+    signalp_result = signalp_result + '_summary.signalp5'
     with open(signalp_result, 'r') as file:
         input_results = file.readlines()
     file.close()
 
-    output_file = open( path + '/' + 'filtered_' + signalp_result, 'w')
+    signalp_result_name_blocks = signalp_result.split('/')
+    path = signalp_result_name_blocks[0]
+    filter_signalp_result = 'filtered_' + signalp_result_name_blocks[1]
+    output_file = open( path + '/' + filter_signalp_result, 'w')
     output_file.write(input_results[0])
     output_file.write(input_results[1])
 
