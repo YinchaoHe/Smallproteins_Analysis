@@ -29,7 +29,10 @@ def my_tmhmm(path, cdhit_result, filter_signalp_result, tmhmm_model):
     tmhmm_input = path + '/' + fasta_file
     tmhmm_command = 'tmhmm -f ' + tmhmm_input + ' ' + '-m' + ' ' + tmhmm_model  
     print("tmhmm coming.......")
-    os.system(tmhmm_command)
+    try:
+        os.system(tmhmm_command)
+    except:
+        print("tmhmm error")
 
 
 def main():
