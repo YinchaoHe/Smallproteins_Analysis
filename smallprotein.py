@@ -1,6 +1,7 @@
 import argparse
 import os
 import assem_fasta
+import tmhmm
 
 def my_getorf(getorf_in, getorf_result, getorf_table, getorf_minsize, getorf_maxsize):
     getorf_command = 'getorf -sequence ' + getorf_in + ' ' +  '-outseq' + ' ' + getorf_result + ' ' + '-table' + ' ' + getorf_table
@@ -20,6 +21,10 @@ def my_signalp(cdhit_result, signalp_org, signalp_format, signalp_result):
     signalp_command = 'signalp -fasta ' + cdhit_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
     os.system(signalp_command)
     assem_fasta.filter_signalp(signalp_result)
+
+def my_tmhmm(filter_signal_result, tmhmm_model):
+    annotation, posterior = tmhmm.predict(filter_signal_result, tmhmm_model)
+    print(annotation)
 
 def main():
     path = 'intermediate'
@@ -56,6 +61,9 @@ def main():
     parser.add_argument("-so", "--signalp_org", type=str, required=False, default="gram-" )
     parser.add_argument("-sf", "--signalp_format", type=str, required=False, default="short")
     parser.add_argument("-sr", '--signalp_result', type=str, required=False, default="cdhit_result")
+
+    parser.add_argument("-t", "--tmhmm", type=bool, required=False, default=False)
+    parser.add_argument("-tm", "--tmhmm_model", type=str, required=False, default="TMHMM2.0.model")
     args = parser.parse_args()
 
 
@@ -63,6 +71,8 @@ def main():
     args.cdhit_result = path + '/' + args.cdhit_result
     args.dia_result = path + '/' + args.dia_result
     args.signalp_result = path + '/' + args.signalp_result
+    filter_signalp_result =  path + '/' + 'filtered_' + args.signalp_result
+
 
     if args.getorf == True:
         my_getorf(args.getorf_in, args.getorf_result, args.getorf_table, args.getorf_minsize, args.getorf_maxsize)
@@ -84,7 +94,10 @@ def main():
     else:
         print("************************* No signalp *************************")
 
-
+    if args.tmhmm == True:
+        my_tmhmm(filter_signalp_result, args.tmhmm_model)
+    else:
+        print("************************* No tmhmm  *************************")
 
 
 if __name__ == '__main__':
