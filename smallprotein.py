@@ -22,8 +22,12 @@ def my_signalp(cdhit_result, signalp_org, signalp_format, signalp_result):
     os.system(signalp_command)
     assem_fasta.filter_signalp(signalp_result)
 
-def my_tmhmm(filter_signal_result, tmhmm_model):
-    tmhmm_command = 'tmhmm -f ' + filter_signal_result + ' ' + '-m' + ' ' + tmhmm_model
+def my_tmhmm(path, cdhit_result, filter_signalp_result, tmhmm_model):
+    out_id = 'filtered_signalped_ids.txt'
+    fasta_file = 'signalped_cdhit.faa'
+    assem_fasta.assemble_fasta(path, signalp_file_name=filter_signalp_result, out_id_file_name=out_id, cdhit_result=cdhit_result, fasta_file=fasta_file)
+    tmhmm_input = path + '/' + fasta_file
+    tmhmm_command = 'tmhmm -f ' + tmhmm_input + ' ' + '-m' + ' ' + tmhmm_model + ' > ' + path + '/'
     os.system(tmhmm_command)
 
 
@@ -96,7 +100,7 @@ def main():
         print("************************* No signalp *************************")
 
     if args.tmhmm == True:
-        my_tmhmm(filter_signalp_result, args.tmhmm_model)
+        my_tmhmm(path, args.cdhit_result, filter_signalp_result, args.tmhmm_model)
     else:
         print("************************* No tmhmm  *************************")
 

@@ -11,7 +11,7 @@ def extract_ids(path, in_file_name, out_id_file_name):
         os.mkdir(path + '/txt_processing')
     except:
         pass
-    with open(path + '/' + in_file_name , 'r') as file:
+    with open(in_file_name , 'r') as file:
         input_results = file.readlines()
     file.close()
 
@@ -50,8 +50,8 @@ def filter_signalp(signalp_result):
     output_file.close()
 
 
-def assemble_fasta(path, in_file_name, out_id_file_name, fasta_file):
-    extract_ids(in_file_name, out_id_file_name)
+def assemble_fasta(path, signalp_file_name, out_id_file_name, fasta_file, cdhit_result):
+    extract_ids(path, signalp_file_name, out_id_file_name)
     with open(path + '/txt_processing/' + out_id_file_name, 'r') as f:
         ids = f.readlines()
     f.close()
@@ -61,7 +61,7 @@ def assemble_fasta(path, in_file_name, out_id_file_name, fasta_file):
         id = id.split('\n')[0]
         search_ids.append(id)
 
-    records = list(SeqIO.parse(path + '/' + "cdhit.result", "fasta"))
+    records = list(SeqIO.parse(cdhit_result, "fasta"))
     n_fasta_seqs = []
     for record in records:
         if record.id in search_ids:
