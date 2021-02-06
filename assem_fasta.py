@@ -65,7 +65,7 @@ def assemble_fasta(path, signalp_file_name, out_id_file_name, fasta_file, cdhit_
     n_fasta_seqs = []
     for record in records:
         if record.id in search_ids:
-            print(record)
+#            print(record)
             rec = SeqRecord(
                 Seq(str(record.seq)),
                 id = record.id,

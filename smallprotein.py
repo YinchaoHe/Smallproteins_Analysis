@@ -27,7 +27,7 @@ def my_tmhmm(path, cdhit_result, filter_signalp_result, tmhmm_model):
     fasta_file = 'signalped_cdhit.faa'
     assem_fasta.assemble_fasta(path, signalp_file_name=filter_signalp_result, out_id_file_name=out_id, cdhit_result=cdhit_result, fasta_file=fasta_file)
     tmhmm_input = path + '/' + fasta_file
-    tmhmm_command = 'tmhmm -f ' + tmhmm_input + ' ' + '-m' + ' ' + tmhmm_model + ' > ' + path + '/'
+    tmhmm_command = 'tmhmm -f ' + tmhmm_input + ' ' + '-m' + ' ' + tmhmm_model 
     os.system(tmhmm_command)
 
 
