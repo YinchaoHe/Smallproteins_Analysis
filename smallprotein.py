@@ -70,8 +70,8 @@ def main():
     args.getorf_result = path + '/' + args.getorf_result
     args.cdhit_result = path + '/' + args.cdhit_result
     args.dia_result = path + '/' + args.dia_result
-    args.signalp_result = path + '/' + args.signalp_result
     filter_signalp_result =  path + '/' + 'filtered_' + args.signalp_result
+    args.signalp_result = path + '/' + args.signalp_result
 
 
     if args.getorf == True:
