@@ -1,7 +1,7 @@
 import argparse
 import os
 import assem_fasta
-import tmhmm
+
 
 def my_getorf(getorf_in, getorf_result, getorf_table, getorf_minsize, getorf_maxsize):
     getorf_command = 'getorf -sequence ' + getorf_in + ' ' +  '-outseq' + ' ' + getorf_result + ' ' + '-table' + ' ' + getorf_table
@@ -23,8 +23,9 @@ def my_signalp(cdhit_result, signalp_org, signalp_format, signalp_result):
     assem_fasta.filter_signalp(signalp_result)
 
 def my_tmhmm(filter_signal_result, tmhmm_model):
-    annotation, posterior = tmhmm.predict(filter_signal_result, tmhmm_model)
-    print(annotation)
+    tmhmm_command = 'tmhmm -f ' + filter_signal_result + ' ' + '-m' + ' ' + tmhmm_model
+    os.system(tmhmm_command)
+
 
 def main():
     path = 'intermediate'
