@@ -20,6 +20,7 @@ def my_diamond_blastp(dia_db, cdhit_result, dia_result):
 def my_signalp(cdhit_result, signalp_org, signalp_format, signalp_result):
     signalp_command = 'signalp -fasta ' + cdhit_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
     os.system(signalp_command)
+    assem_fasta.seq_len_signalp(signalp_result=signalp_result, cdhit_result=cdhit_result)
     assem_fasta.filter_signalp(signalp_result)
 
 def my_tmhmm(path, cdhit_result, filter_signalp_result, tmhmm_model):
