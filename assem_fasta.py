@@ -47,7 +47,9 @@ def seq_len_signalp(signalp_result, cdhit_result):
             if id == record.id:
                 leng_seq = input_result.split("\n")[0] + " " * 4 + str(len(record.seq)) + '\n'
                 add_length_result.append(leng_seq)
-    with open('add_Seqlength_'+signalp_result, 'w') as f:
+
+    signalp_result = signalp_result.split('/')[1]
+    with open('intermediate/add_Seqlength_'+signalp_result, 'w') as f:
         f.writelines(add_length_result)
     f.close()
 
