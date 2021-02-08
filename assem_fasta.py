@@ -55,7 +55,8 @@ def seq_len_signalp(signalp_result, cdhit_result):
 
 def filter_signalp(signalp_result):
     signalp_result = signalp_result + '_summary.signalp5'
-    with open(signalp_result, 'r') as file:
+    signalp_result = signalp_result.split('/')[1]
+    with open('intermediate/add_Seqlength_'+signalp_result, 'r') as file:
         input_results = file.readlines()
     file.close()
 
