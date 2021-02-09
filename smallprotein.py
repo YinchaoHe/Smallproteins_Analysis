@@ -17,6 +17,11 @@ def my_diamond_blastp(dia_db, cdhit_result, dia_result):
     diamond_blastp_command = 'diamond blastp --db ' + dia_db + ' ' + '-q' + ' ' + cdhit_result + ' ' + '-o' + ' ' + dia_result
     os.system(diamond_blastp_command)
 
+def my_blastp(blastp_db, cdhit_result, blastp_outfmt, blastp_evalue, blastp_max_target_seqs, blastp_num_threads, blastp_result):
+    blastp_command = 'blastp -db ' + blastp_db + ' -query ' + cdhit_result + ' -outfmt ' + blastp_outfmt + ' -evalue ' + blastp_evalue
+    blastp_command = blastp_command + ' -max_target_seqs ' + blastp_max_target_seqs + ' -num_threads ' + blastp_num_threads + ' -out ' + blastp_result
+    os.system(blastp_command)
+
 def my_signalp(cdhit_result, signalp_org, signalp_format, signalp_result):
     signalp_command = 'signalp -fasta ' + cdhit_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
     os.system(signalp_command)
@@ -64,8 +69,16 @@ def main():
     parser.add_argument("-cg", "--cdhit_g", type=str, required=False, default="1")
 
     parser.add_argument("-d", "--diamondp", type=bool, required=False, default=False)
-    parser.add_argument("-db", "--dia_db", type=str, required=False, default='/mnt/array2/smallproteins/database/DM_database/SmProt_KnownDatabase.dmnd ')
+    parser.add_argument("-dd", "--dia_db", type=str, required=False, default='/mnt/array2/smallproteins/database/DM_database/SmProt_KnownDatabase.dmnd')
     parser.add_argument("-dr", "--dia_result", type=str, required=False, default="cdhited_diamond_KnownDatabase.txt")
+
+    parser.add_argument("-b", '--blastp', type=bool, required=False, default=False)
+    parser.add_argument("-bd", "--blastp_db", type=str, required=False, default='/mnt/array2/smallproteins/database/DM_database/SmProt_KnownDatabase.dmnd')
+    parser.add_argument("-bo", "--blastp_outfmt", type=str, required=False, default='6 std qcovs qcovhsp')
+    parser.add_argument("-be", '--blastp_evalue', type=str, required=False, default='10')
+    parser.add_argument("-bm", "--max_target_seqs", type=str, required=False, default='1')
+    parser.add_argument("-bt", "--blastp_num_threads", type=str, required=False, default='15')
+    parser.add_argument("-br", "--blastp_result", type=str, required=False, default='cdhited_blastp_KnownDatabase.blastpOUT')
 
     parser.add_argument("-s", "--signalp", type=bool, required=False, default=False)
     parser.add_argument("-so", "--signalp_org", type=str, required=False, default="gram-" )
@@ -80,6 +93,7 @@ def main():
     args.getorf_result = path + '/' + args.getorf_result
     args.cdhit_result = path + '/' + args.cdhit_result
     args.dia_result = path + '/' + args.dia_result
+    args.blastp_result = path + '/' + args.blastp_result
     filter_signalp_result =  path + '/' + 'filtered_' + args.signalp_result
     args.signalp_result = path + '/' + args.signalp_result
 
@@ -98,6 +112,11 @@ def main():
         my_diamond_blastp(args.dia_db, args.cdhit_result, args.dia_result)
     else:
         print("************************* No diamond blastp *************************")
+
+    if args.blastp == True:
+        my_blastp(args.blastp_db, args.cdhit_result, args.blastp_outfmt, args.blastp_evalue, args.max_target_seqs, args.blastp_num_threads, args.blastp_result)
+    else:
+        print("************************* No blastp *************************")
 
     if args.signalp == True:
         my_signalp(args.cdhit_result, args.signalp_org, args.signalp_format, args.signalp_result)
