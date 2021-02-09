@@ -40,7 +40,6 @@ def my_tmhmm(path, cdhit_result, filter_signalp_result, tmhmm_model):
     except:
         print("tmhmm error")
 
-
 def main():
     path = 'intermediate'
     try:
@@ -73,12 +72,12 @@ def main():
     parser.add_argument("-dr", "--dia_result", type=str, required=False, default="cdhited_diamond_KnownDatabase.txt")
 
     parser.add_argument("-b", '--blastp', type=bool, required=False, default=False)
-    parser.add_argument("-bd", "--blastp_db", type=str, required=False, default='/mnt/array2/smallproteins/database/DM_database/SmProt_KnownDatabase.dmnd')
+    parser.add_argument("-bd", "--blastp_db", type=str, required=False, default='/mnt/array2/smallproteins/database/Kyrpides_small_proteins/Homologs_of_All_4539_Families/cluster_homologs_db')
     parser.add_argument("-bo", "--blastp_outfmt", type=str, required=False, default='6 std qcovs qcovhsp')
     parser.add_argument("-be", '--blastp_evalue', type=str, required=False, default='10')
     parser.add_argument("-bm", "--max_target_seqs", type=str, required=False, default='1')
     parser.add_argument("-bt", "--blastp_num_threads", type=str, required=False, default='15')
-    parser.add_argument("-br", "--blastp_result", type=str, required=False, default='cdhited_blastp_KnownDatabase.blastpOUT')
+    parser.add_argument("-br", "--blastp_result", type=str, required=False, default='DHIT_query_KypridesHomologs_db_evalue-le10.blastpOUT')
 
     parser.add_argument("-s", "--signalp", type=bool, required=False, default=False)
     parser.add_argument("-so", "--signalp_org", type=str, required=False, default="gram-" )
