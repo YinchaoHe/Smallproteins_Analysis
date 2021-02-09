@@ -18,9 +18,8 @@ def my_diamond_blastp(dia_db, cdhit_result, dia_result):
     os.system(diamond_blastp_command)
 
 def my_blastp(blastp_db, cdhit_result, blastp_outfmt, blastp_evalue, blastp_max_target_seqs, blastp_num_threads, blastp_result):
-    #blastp_command = 'blastp -db ' + blastp_db + ' -query ' + cdhit_result + ' -outfmt ' + blastp_outfmt + ' -evalue ' + blastp_evalue
-    #blastp_command = blastp_command + ' -max_target_seqs ' + blastp_max_target_seqs + ' -num_threads ' + blastp_num_threads + ' -out ' + blastp_result
-    blastp_command = 'blastp -db /mnt/array2/smallproteins/database/Kyrpides_small_proteins/Homologs_of_All_4539_Families/cluster_homologs_db -query /mnt/array2/smallproteins/cdhit.result -outfmt "6 std qcovs qcovhsp" -evalue 10 -max_target_seqs 1 -num_threads 15 -out 1stCDHIT_query_KypridesHomologs_db_evalue-le10.blastpOUT'
+    blastp_command = 'blastp -db ' + blastp_db + ' -query ' + cdhit_result + ' -outfmt \"' + blastp_outfmt + '\" -evalue ' + blastp_evalue
+    blastp_command = blastp_command + ' -max_target_seqs ' + blastp_max_target_seqs + ' -num_threads ' + blastp_num_threads + ' -out ' + blastp_result
     os.system(blastp_command)
 
 def my_signalp(cdhit_result, signalp_org, signalp_format, signalp_result):
