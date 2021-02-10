@@ -43,7 +43,7 @@ def seq_len_signalp(signalp_result, reference):
 
     seq_dic = {}
     for record in records:
-        seq_dic[record] = str(len(record.seq))
+        seq_dic[record.id] = str(len(record.seq))
 
     for input_result in input_results[2:]:
         id = input_result.split()[0]
