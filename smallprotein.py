@@ -1,15 +1,125 @@
 import argparse
 import os
-import assem_fasta
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+import time
 
+def extract_ids(path, in_file_name, out_id_file_name):
+    try:
+        os.mkdir(path + '/txt_processing')
+    except:
+        pass
+    with open(in_file_name , 'r') as file:
+        input_results = file.readlines()
+    file.close()
+
+    target_ids = []
+    output_file = open(path + '/txt_processing/' + out_id_file_name, 'w')
+    if 'signalp5' in in_file_name:
+        for input_result in input_results[2:]:
+            id = input_result.split()[0]
+            target_ids.append(id)
+            output_file.write(id + '\n')
+        output_file.close()
+    else:
+        for input_result in input_results:
+            id = input_result.split()[0]
+            target_ids.append(id)
+            output_file.write(id + '\n')
+        output_file.close()
+
+def seq_len_signalp(signalp_result, reference):
+    signalp_result = signalp_result + '_summary.signalp5'
+    with open(signalp_result, 'r') as file:
+       input_results = file.readlines()
+    file.close()
+
+    records = list(SeqIO.parse(reference, "fasta"))
+
+    add_length_result = [input_results[0]]
+    title = input_results[1].split("\n")[0] + " " * 4 + 'sequence_length' + '\n'
+    add_length_result.append(title)
+
+    seq_dic = {}
+    for record in records:
+        seq_dic[record] = str(len(record.seq))
+
+    for input_result in input_results[2:]:
+        id = input_result.split()[0]
+        if id in seq_dic.keys():
+            leng_seq = input_result.split("\n")[0] + " " * 4 + seq_dic[id] + '\n'
+            add_length_result.append(leng_seq)
+
+        # for record in records:
+        #     if id == record.id:
+        #         leng_seq = input_result.split("\n")[0] + " " * 4 + str(len(record.seq)) + '\n'
+        #         add_length_result.append(leng_seq)
+
+    signalp_result = signalp_result.split('/')[1]
+    with open('intermediate/add_Seqlength_'+signalp_result, 'w') as f:
+        f.writelines(add_length_result)
+    f.close()
+
+def filter_signalp(signalp_result):
+    signalp_result = signalp_result + '_summary.signalp5'
+    signalp_result_name_blocks = signalp_result.split('/')
+    path = signalp_result_name_blocks[0]
+
+    with open('intermediate/add_Seqlength_'+signalp_result_name_blocks[1], 'r') as file:
+        input_results = file.readlines()
+    file.close()
+
+    signalp_result_name_blocks = signalp_result.split('/')
+    path = signalp_result_name_blocks[0]
+    filter_signalp_result = 'filtered_' + signalp_result_name_blocks[1]
+    output_file = open( path + '/' + filter_signalp_result, 'w')
+    output_file.write(input_results[0])
+    output_file.write(input_results[1])
+
+    for input_result in input_results[2:]:
+        prediction = input_result.split()[1]
+        if prediction != 'OTHER':
+            output_file.write(input_result)
+    output_file.close()
+
+
+def assemble_fasta(path, signalp_file_name, out_id_file_name, fasta_file, cdhit_result):
+    extract_ids(path, signalp_file_name, out_id_file_name)
+    with open(path + '/txt_processing/' + out_id_file_name, 'r') as f:
+        ids = f.readlines()
+    f.close()
+
+    search_ids = []
+    for id in ids:
+        id = id.split('\n')[0]
+        search_ids.append(id)
+
+    records = list(SeqIO.parse(cdhit_result, "fasta"))
+    n_fasta_seqs = []
+    for record in records:
+        if record.id in search_ids:
+#            print(record)
+            rec = SeqRecord(
+                Seq(str(record.seq)),
+                id = record.id,
+                name = record.name,
+                description = record.description,
+            )
+            n_fasta_seqs.append(rec)
+    SeqIO.write(n_fasta_seqs, path + '/' + fasta_file, "fasta")
+
+def count_fasta(path, fasta_file):
+    records = list(SeqIO.parse(path + '/' + fasta_file, "fasta"))
+    print(len(records))
 
 def my_getorf(getorf_in, getorf_result, getorf_table, getorf_minsize, getorf_maxsize):
     getorf_command = 'getorf -sequence ' + getorf_in + ' ' +  '-outseq' + ' ' + getorf_result + ' ' + '-table' + ' ' + getorf_table
     getorf_command = getorf_command + ' ' + '-minsize' + ' ' + getorf_minsize + ' ' + '-maxsize' + ' ' + getorf_maxsize
     os.system(getorf_command)
 
-def my_cdhit(getorf_result, cdhit_result, cdhit_n, cdhit_p, cdhit_c, cdhit_d, cdhit_M, cdhit_l, cdhit_s, cdhit_aL, cdhit_g):
-    cdhit_command = 'cd-hit -i ' + getorf_result + ' ' + '-o' + ' ' + cdhit_result + ' ' + '-n' + ' ' + cdhit_n + ' ' + '-p' + ' ' + cdhit_p
+def my_cdhit(cdhit_input, cdhit_result, cdhit_n, cdhit_p, cdhit_c, cdhit_d, cdhit_M, cdhit_l, cdhit_s, cdhit_aL, cdhit_g):
+    cdhit_command = 'cd-hit -i ' + cdhit_input + ' ' + '-o' + ' ' + cdhit_result + ' ' + '-n' + ' ' + cdhit_n + ' ' + '-p' + ' ' + cdhit_p
     cdhit_command = cdhit_command +  ' ' + '-c' + ' ' + cdhit_c + ' ' + '-d' + ' ' + cdhit_d + ' ' + '-M' + ' ' + cdhit_M + ' ' + '-l' + ' ' + cdhit_l + ' ' + '-s' + ' ' + cdhit_s + ' ' + '-aL' + ' ' + cdhit_aL + ' ' + '-g' + ' ' + cdhit_g
     os.system(cdhit_command)
 
@@ -22,16 +132,30 @@ def my_blastp(blastp_db, cdhit_result, blastp_outfmt, blastp_evalue, blastp_max_
     blastp_command = blastp_command + ' -max_target_seqs ' + blastp_max_target_seqs + ' -num_threads ' + blastp_num_threads + ' -out ' + blastp_result
     os.system(blastp_command)
 
-def my_signalp(cdhit_result, signalp_org, signalp_format, signalp_result):
+def my_signalp_by_cdhit(cdhit_result, signalp_org, signalp_format, signalp_result):
     signalp_command = 'signalp -fasta ' + cdhit_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
+    start = time.time()
     os.system(signalp_command)
-    assem_fasta.seq_len_signalp(signalp_result=signalp_result, cdhit_result=cdhit_result)
-    assem_fasta.filter_signalp(signalp_result)
+    seq_len_signalp(signalp_result=signalp_result, reference=cdhit_result)
+    filter_signalp(signalp_result)
+    done = time.time()
+    elapsed = done - start
+    print("signalp run: " + str(elapsed))
+
+def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_result):
+    signalp_command = 'signalp -fasta ' + getorf_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
+    start = time.time()
+    os.system(signalp_command)
+    seq_len_signalp(signalp_result=signalp_result, reference=getorf_result)
+    filter_signalp(signalp_result)
+    done = time.time()
+    elapsed = done - start
+    print("signalp run: " + str(elapsed))
 
 def my_tmhmm(path, cdhit_result, filter_signalp_result, tmhmm_model):
     out_id = 'filtered_signalped_ids.txt'
     fasta_file = 'signalped_cdhit.faa'
-    assem_fasta.assemble_fasta(path, signalp_file_name=filter_signalp_result, out_id_file_name=out_id, cdhit_result=cdhit_result, fasta_file=fasta_file)
+    assemble_fasta(path, signalp_file_name=filter_signalp_result, out_id_file_name=out_id, cdhit_result=cdhit_result, fasta_file=fasta_file)
     tmhmm_input = path + '/' + fasta_file
     tmhmm_command = 'tmhmm -f ' + tmhmm_input + ' ' + '-m' + ' ' + tmhmm_model  
     print("tmhmm coming.......")
@@ -56,6 +180,7 @@ def main():
     parser.add_argument("-gma", "--getorf_maxsize", type=str, required=False, default='50')
 
     parser.add_argument("-c", "--cdhit", type=bool, required=False, default=False)
+    parser.add_argument("-ci", "--cdhit_input", type=str, required=False, default='None')
     parser.add_argument("-cr", "--cdhit_result", type=str, required=False, default='cdhit.result')
     parser.add_argument("-cn", "--cdhit_n", type=str, required=False, default='2')
     parser.add_argument("-cp", "--cdhit_p", type=str, required=False, default='1')
@@ -80,6 +205,8 @@ def main():
     parser.add_argument("-br", "--blastp_result", type=str, required=False, default='DHIT_query_KypridesHomologs_db_evalue-le10.blastpOUT')
 
     parser.add_argument("-s", "--signalp", type=bool, required=False, default=False)
+    parser.add_argument("-sg", "--signalp_getorf", type=bool, required=False, default=False)
+    parser.add_argument("-si", "--signalp_input", type=str, required=False, default='None')
     parser.add_argument("-so", "--signalp_org", type=str, required=False, default="gram-" )
     parser.add_argument("-sf", "--signalp_format", type=str, required=False, default="short")
     parser.add_argument("-sr", '--signalp_result', type=str, required=False, default="cdhit_result")
@@ -102,10 +229,19 @@ def main():
     else:
         print("************************* No getorf *************************")
 
+
+
     if args.cdhit == True:
-        my_cdhit(args.getorf_result, args.cdhit_result, args.cdhit_n, args.cdhit_p, args.cdhit_c, args.cdhit_d, args.cdhit_M, args.cdhit_l, args.cdhit_s, args.cdhit_aL, args.cdhit_g)
+        if args.getorf == True:
+            my_cdhit(args.getorf_result, args.cdhit_result, args.cdhit_n, args.cdhit_p, args.cdhit_c, args.cdhit_d, args.cdhit_M, args.cdhit_l, args.cdhit_s, args.cdhit_aL, args.cdhit_g)
+        elif args.cdhit_input != "None":
+            my_cdhit(args.cdhit_input, args.cdhit_result, args.cdhit_n, args.cdhit_p, args.cdhit_c, args.cdhit_d, args.cdhit_M, args.cdhit_l, args.cdhit_s, args.cdhit_aL, args.cdhit_g)
+        else:
+            print('------------------------ please input the path of the cdhit input------------------------')
     else:
         print("************************* No cdhit *************************")
+
+
 
     if args.diamondp == True:
         my_diamond_blastp(args.dia_db, args.cdhit_result, args.dia_result)
@@ -117,10 +253,18 @@ def main():
     else:
         print("************************* No blastp *************************")
 
+
+
     if args.signalp == True:
-        my_signalp(args.cdhit_result, args.signalp_org, args.signalp_format, args.signalp_result)
+        if args.signalp_getorf == True:
+            my_signalp_by_getorf(args.getorf_result, args.signalp_org, args.signalp_format, args.signalp_result)
+        else:
+            my_signalp_by_cdhit(args.cdhit_result, args.signalp_org, args.signalp_format, args.signalp_result)
+            print('------------------------ please input the path of the signalp input------------------------')
     else:
         print("************************* No signalp *************************")
+
+
 
     if args.tmhmm == True:
         my_tmhmm(path, args.cdhit_result, filter_signalp_result, args.tmhmm_model)
