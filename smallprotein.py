@@ -51,13 +51,11 @@ def seq_len_signalp(signalp_result, reference):
             leng_seq = input_result.split("\n")[0] + " " * 4 + seq_dic[id] + '\n'
             add_length_result.append(leng_seq)
 
-        # for record in records:
-        #     if id == record.id:
-        #         leng_seq = input_result.split("\n")[0] + " " * 4 + str(len(record.seq)) + '\n'
-        #         add_length_result.append(leng_seq)
+
 
     signalp_result = signalp_result.split('/')[1]
-    with open('intermediate/add_Seqlength_'+signalp_result, 'w') as f:
+    #with open('intermediate/add_Seqlength_'+signalp_result, 'w') as f:
+    with open('add_Seqlength_' + signalp_result, 'w') as f:
         f.writelines(add_length_result)
     f.close()
 
@@ -260,7 +258,6 @@ def main():
             my_signalp_by_getorf(args.getorf_result, args.signalp_org, args.signalp_format, args.signalp_result)
         else:
             my_signalp_by_cdhit(args.cdhit_result, args.signalp_org, args.signalp_format, args.signalp_result)
-            print('------------------------ please input the path of the signalp input------------------------')
     else:
         print("************************* No signalp *************************")
 
@@ -273,4 +270,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    start = time.time()
+    seq_len_signalp(signalp_result= '15_50aa_table1_results/cdhit_result', reference= '15_50aa_table1_results/cdhit.result')
+    end = time.time()
+    print(str(start - end))
+    #main()
