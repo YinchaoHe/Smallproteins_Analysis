@@ -54,8 +54,8 @@ def seq_len_signalp(signalp_result, reference):
 
 
     signalp_result = signalp_result.split('/')[1]
-    #with open('intermediate/add_Seqlength_'+signalp_result, 'w') as f:
-    with open('add_Seqlength_' + signalp_result, 'w') as f:
+    with open('intermediate/add_Seqlength_'+signalp_result, 'w') as f:
+
         f.writelines(add_length_result)
     f.close()
 
@@ -270,8 +270,4 @@ def main():
 
 
 if __name__ == '__main__':
-    start = time.time()
-    seq_len_signalp(signalp_result= '15_50aa_table1_results/cdhit_result', reference= '15_50aa_table1_results/cdhit.result')
-    end = time.time()
-    print(str(start - end))
-    #main()
+    main()
