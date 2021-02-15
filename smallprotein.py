@@ -221,11 +221,14 @@ def main():
     filter_signalp_result =  path + '/' + 'filtered_' + args.signalp_result
     args.signalp_result = path + '/' + args.signalp_result
 
-
+    start_getorf = time.time()
     if args.getorf == True:
         my_getorf(args.getorf_in, args.getorf_result, args.getorf_table, args.getorf_minsize, args.getorf_maxsize)
     else:
         print("************************* No getorf *************************")
+    done_getorf = time.time()
+    elapsed = done_getorf - start_getorf
+    print("cdhit + signalp run: " + str(elapsed))
 
     start_cdhit = time.time()
     if args.cdhit == True:
