@@ -227,8 +227,7 @@ def main():
     else:
         print("************************* No getorf *************************")
 
-
-
+    start_cdhit = time.time()
     if args.cdhit == True:
         if args.getorf == True:
             my_cdhit(args.getorf_result, args.cdhit_result, args.cdhit_n, args.cdhit_p, args.cdhit_c, args.cdhit_d, args.cdhit_M, args.cdhit_l, args.cdhit_s, args.cdhit_aL, args.cdhit_g)
@@ -261,6 +260,9 @@ def main():
     else:
         print("************************* No signalp *************************")
 
+    done_signalp = time.time()
+    elapsed = done_signalp - start_cdhit
+    print("cdhit + signalp run: " + str(elapsed))
 
 
     if args.tmhmm == True:

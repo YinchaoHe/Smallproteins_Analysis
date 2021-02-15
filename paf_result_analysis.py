@@ -19,26 +19,28 @@ def get_brief_records(path, cazyfamilies, sequences):
                 sequences['name_list'][sequence] = seq_info
                 sequences['seq_amount'] += 1
 
-            cazyfamily = record.tname.split('|')[1]
-            if cazyfamily in cazyfamilies['name_list']:
-                print("the cazyfamily exists")
-                seq_array = [sequence, record.tlen]
-                if seq_array not in cazyfamilies['name_list'][cazyfamily]['cazyfamily_sequence_list']:
-                    cazyfamilies['name_list'][cazyfamily]['cazyfamily_sequence_list'].append(seq_array)
-            else:
-                cazy_info = {}
-                cazy_info['cazyfamily_read_count'] = 0
-                seq_array = [sequence, record.tlen]
-                cazy_info['cazyfamily_sequence_list'] = [seq_array]
-                cazyfamilies['name_list'][cazyfamily] = cazy_info
-                cazyfamilies['family_amount'] += 1
+            multi_cazyfamilies = record.tname.split('|')[1:]
+            print(multi_cazyfamilies)
+            for cazyfamily in multi_cazyfamilies:
+                if cazyfamily in cazyfamilies['name_list']:
+                    print("the cazyfamily exists")
+                    seq_array = [sequence, record.tlen]
+                    if seq_array not in cazyfamilies['name_list'][cazyfamily]['cazyfamily_sequence_list']:
+                        cazyfamilies['name_list'][cazyfamily]['cazyfamily_sequence_list'].append(seq_array)
+                else:
+                    cazy_info = {}
+                    cazy_info['cazyfamily_read_count'] = 0
+                    seq_array = [sequence, record.tlen]
+                    cazy_info['cazyfamily_sequence_list'] = [seq_array]
+                    cazyfamilies['name_list'][cazyfamily] = cazy_info
+                    cazyfamilies['family_amount'] += 1
 
             read_id = record.qname.split('/')[0]
             if read_id in reads.keys():
                 print('the read_id exists in the list')
             else:
                 read = {}
-                read['cazy_family'] = record.tname.split('|')[1]
+                read['cazy_family'] = record.tname.split('|')[1:]
                 read['seq_id'] = record.tname.split('|')[0]
                 reads[read_id] = read
 
@@ -53,22 +55,22 @@ def cazy_family_counter(cazyfamilies, reads_R1, reads_R2):
     for read_id in reads_R1.keys():
         if read_id in reads_R2.keys():
             read_in_R1 = reads_R1[read_id]
-            read1_cazyfamily = read_in_R1['cazy_family']
-            cazyfamilies['name_list'][read1_cazyfamily]['cazyfamily_read_count'] += 0.5
+            for read1_cazyfamily in read_in_R1['cazy_family']:
+                cazyfamilies['name_list'][read1_cazyfamily]['cazyfamily_read_count'] += 0.5
         else:
             read_in_R1 = reads_R1[read_id]
-            read1_cazyfamily = read_in_R1['cazy_family']
-            cazyfamilies['name_list'][read1_cazyfamily]['cazyfamily_read_count'] += 1
+            for read1_cazyfamily in read_in_R1['cazy_family']:
+                cazyfamilies['name_list'][read1_cazyfamily]['cazyfamily_read_count'] += 1
 
     for read_id in reads_R2.keys():
         if read_id in reads_R1.keys():
             read_in_R2 = reads_R2[read_id]
-            read2_cazyfamily = read_in_R2['cazy_family']
-            cazyfamilies['name_list'][read2_cazyfamily]['cazyfamily_read_count'] += 0.5
+            for read2_cazyfamily in read_in_R2['cazy_family']:
+                cazyfamilies['name_list'][read2_cazyfamily]['cazyfamily_read_count'] += 0.5
         else:
             read_in_R2= reads_R2[read_id]
-            read2_cazyfamily = read_in_R2['cazy_family']
-            cazyfamilies['name_list'][read2_cazyfamily]['cazyfamily_read_count'] += 1
+            for read2_cazyfamily in read_in_R2['cazy_family']:
+                cazyfamilies['name_list'][read2_cazyfamily]['cazyfamily_read_count'] += 1
 
     for cazyfamily_name in cazyfamilies['name_list']:
         cazyfamily = cazyfamilies['name_list'][cazyfamily_name]
@@ -140,6 +142,7 @@ def cazyfamily_FPKM(cazyfamilies, amount_all_reads):
     with open('bowtie2_cazyfamilies.json', 'w') as f:
         json.dump(cazyfamilies, f)
     f.close()
+
 def main():
     cazyfamilies = {}
     cazyfamilies['name_list'] = {}
@@ -150,19 +153,22 @@ def main():
     sequences['seq_amount'] = 0
 
     start = time.time()
-    path_R1 = "output/bowtie.R1.paf"
+    path_R1 = "output/b.R1.paf"
     reads_R1 = get_brief_records(path_R1, cazyfamilies, sequences)
 
-    path_R2 = "output/bowtie.R2.paf"
+    path_R2 = "output/b.R2.paf"
     reads_R2 = get_brief_records(path_R2, cazyfamilies, sequences)
 
     cazy_family_counter(cazyfamilies, reads_R1, reads_R2)
     sequence_counter(sequences, reads_R1, reads_R2)
 
+
     amount_all_reads = total_reads_counter(reads_R1, reads_R2)
+    print(amount_all_reads)
     sequence_FPKM(sequences, amount_all_reads)
     cazyfamily_FPKM(cazyfamilies, amount_all_reads)
     stop = time.time()
     print('run: ' + str(stop - start))
+
 if __name__ == '__main__':
     main()
