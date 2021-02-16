@@ -82,8 +82,8 @@ def filter_signalp(signalp_result):
     output_file.close()
 
 
-def assemble_fasta(path, signalp_file_name, out_id_file_name, fasta_file, cdhit_result):
-    extract_ids(path, signalp_file_name, out_id_file_name)
+def assemble_fasta(path, extract_in_file_name, out_id_file_name, fasta_file, reference):
+    extract_ids(path, extract_in_file_name, out_id_file_name)
     with open(path + '/txt_processing/' + out_id_file_name, 'r') as f:
         ids = f.readlines()
     f.close()
@@ -93,11 +93,11 @@ def assemble_fasta(path, signalp_file_name, out_id_file_name, fasta_file, cdhit_
         id = id.split('\n')[0]
         search_ids.append(id)
 
-    records = list(SeqIO.parse(cdhit_result, "fasta"))
+    records = list(SeqIO.parse(reference, "fasta"))
     n_fasta_seqs = []
     for record in records:
         if record.id in search_ids:
-#            print(record)
+#           print(record)
             rec = SeqRecord(
                 Seq(str(record.seq)),
                 id = record.id,
@@ -150,12 +150,22 @@ def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_res
     elapsed = done - start
     print("signalp run: " + str(elapsed))
 
-def my_tmhmm(path, cdhit_result, filter_signalp_result, tmhmm_model):
-    out_id = 'filtered_signalped_ids.txt'
-    fasta_file = 'signalped_cdhit.faa'
-    assemble_fasta(path, signalp_file_name=filter_signalp_result, out_id_file_name=out_id, cdhit_result=cdhit_result, fasta_file=fasta_file)
+def my_tmhmm_cdhit(path, reference, extract_in_file_name):
+    out_id = 'chosen_ids.txt'
+    fasta_file = 'chosen_seq4tmhmm.faa'
+    assemble_fasta(path, extract_in_file_name=extract_in_file_name, out_id_file_name=out_id, reference=reference, fasta_file=fasta_file)
     tmhmm_input = path + '/' + fasta_file
-    tmhmm_command = 'tmhmm -f ' + tmhmm_input + ' ' + '-m' + ' ' + tmhmm_model  
+    output = 'intermediate/tmhmm_result.txt'
+    tmhmm_command = './tmhmm-2.0c/bin/tmhmm ' + tmhmm_input + ' -short > ' + output
+    print("tmhmm coming.......")
+    try:
+        os.system(tmhmm_command)
+    except:
+        print("tmhmm error")
+
+def my_tmhmm_getorf(getorf_result):
+    output = 'intermediate/tmhmm_result.txt'
+    tmhmm_command = './tmhmm-2.0c/bin/tmhmm ' + getorf_result + ' -short > ' + output
     print("tmhmm coming.......")
     try:
         os.system(tmhmm_command)
@@ -210,7 +220,9 @@ def main():
     parser.add_argument("-sr", '--signalp_result', type=str, required=False, default="cdhit_result")
 
     parser.add_argument("-t", "--tmhmm", type=bool, required=False, default=False)
-    parser.add_argument("-tm", "--tmhmm_model", type=str, required=False, default="TMHMM2.0.model")
+    parser.add_argument("-ti", "--tmhmm_input", type=str, required=False, default="None")
+    parser.add_argument("-tg", "--tmhmm_getorf", type=bool, required=False, default=False)
+
     args = parser.parse_args()
 
 
@@ -228,7 +240,7 @@ def main():
         print("************************* No getorf *************************")
     done_getorf = time.time()
     elapsed = done_getorf - start_getorf
-    print("cdhit + signalp run: " + str(elapsed))
+    print("getorf run: " + str(elapsed))
 
     start_cdhit = time.time()
     if args.cdhit == True:
@@ -240,8 +252,9 @@ def main():
             print('------------------------ please input the path of the cdhit input------------------------')
     else:
         print("************************* No cdhit *************************")
-
-
+    done_cdhit = time.time()
+    elapsed = done_cdhit - start_cdhit
+    print("cdhit run: " + str(elapsed))
 
     if args.diamondp == True:
         my_diamond_blastp(args.dia_db, args.cdhit_result, args.dia_result)
@@ -263,16 +276,22 @@ def main():
     else:
         print("************************* No signalp *************************")
 
-    done_signalp = time.time()
-    elapsed = done_signalp - start_cdhit
-    print("cdhit + signalp run: " + str(elapsed))
 
 
+    start_tmhmm = time.time()
     if args.tmhmm == True:
-        my_tmhmm(path, args.cdhit_result, filter_signalp_result, args.tmhmm_model)
+        if args.tmhmm_getorf == True:
+            my_tmhmm_getorf(args.getorf_result)
+        else:
+            if args.tmhmm_input == None:
+                my_tmhmm_cdhit(path, reference=args.cdhit_result, extract_in_file_name=filter_signalp_result)
+            else:
+                my_tmhmm_getorf(args.tmhmm_input)
     else:
         print("************************* No tmhmm  *************************")
-
+    done_tmhmm = time.time()
+    elapsed = done_tmhmm - start_tmhmm
+    print("tmhmm run: " + str(elapsed))
 
 if __name__ == '__main__':
     main()
