@@ -138,7 +138,7 @@ def my_signalp_by_cdhit(cdhit_result, signalp_org, signalp_format, signalp_resul
     filter_signalp(signalp_result)
     done = time.time()
     elapsed = done - start
-    print("signalp run: " + str(elapsed))
+    print("signalp run: " + str(elapsed/60.0))
 
 def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_result):
     signalp_command = 'signalp -fasta ' + getorf_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
@@ -148,7 +148,7 @@ def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_res
     filter_signalp(signalp_result)
     done = time.time()
     elapsed = done - start
-    print("signalp run: " + str(elapsed))
+    print("signalp run: " + str(elapsed/60.0))
 
 def my_tmhmm_cdhit(path, reference, extract_in_file_name):
     out_id = 'chosen_ids.txt'
@@ -160,6 +160,7 @@ def my_tmhmm_cdhit(path, reference, extract_in_file_name):
     print("tmhmm coming.......")
     try:
         os.system(tmhmm_command)
+        os.system('rm -rf TMHMM_*')
     except:
         print("tmhmm error")
 
@@ -169,6 +170,7 @@ def my_tmhmm_getorf(getorf_result):
     print("tmhmm coming.......")
     try:
         os.system(tmhmm_command)
+        os.system('rm -rf TMHMM_*')
     except:
         print("tmhmm error")
 
@@ -240,7 +242,7 @@ def main():
         print("************************* No getorf *************************")
     done_getorf = time.time()
     elapsed = done_getorf - start_getorf
-    print("getorf run: " + str(elapsed))
+    print("getorf run: " + str(elapsed/60.0))
 
     start_cdhit = time.time()
     if args.cdhit == True:
@@ -254,7 +256,7 @@ def main():
         print("************************* No cdhit *************************")
     done_cdhit = time.time()
     elapsed = done_cdhit - start_cdhit
-    print("cdhit run: " + str(elapsed))
+    print("cdhit run: " + str(elapsed/60.0))
 
     if args.diamondp == True:
         my_diamond_blastp(args.dia_db, args.cdhit_result, args.dia_result)
@@ -291,7 +293,7 @@ def main():
         print("************************* No tmhmm  *************************")
     done_tmhmm = time.time()
     elapsed = done_tmhmm - start_tmhmm
-    print("tmhmm run: " + str(elapsed))
+    print("tmhmm run: " + str(elapsed/60.0))
 
 if __name__ == '__main__':
     main()
