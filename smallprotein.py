@@ -4,7 +4,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import time
-
+import threading
 def extract_ids(path, in_file_name, out_id_file_name):
     try:
         os.mkdir(path + '/txt_processing')
@@ -29,7 +29,29 @@ def extract_ids(path, in_file_name, out_id_file_name):
             output_file.write(id + '\n')
         output_file.close()
 
-def seq_len_signalp(signalp_result, reference):
+def seq_len_tmhmm(tmhmm_result, reference, direction_path):
+    with open(tmhmm_result, 'r') as file:
+       input_results = file.readlines()
+    file.close()
+    records = list(SeqIO.parse(reference, "fasta"))
+    add_length_result = []
+
+    seq_dic = {}
+    for record in records:
+        seq_dic[record.id] = str(len(record.seq))
+
+    for input_result in input_results:
+        id = input_result.split()[0]
+        if id in seq_dic.keys():
+            leng_seq = input_result.split("\n")[0] + " " * 4 + seq_dic[id] + '\n'
+            add_length_result.append(leng_seq)
+
+    tmhmm_result = tmhmm_result.split('/')[1]
+    with open( direction_path + '/add_Seqlength_'+ tmhmm_result, 'w') as f:
+        f.writelines(add_length_result)
+    f.close()
+
+def seq_len_signalp(signalp_result, reference, direction_path):
     signalp_result = signalp_result + '_summary.signalp5'
     with open(signalp_result, 'r') as file:
        input_results = file.readlines()
@@ -54,17 +76,16 @@ def seq_len_signalp(signalp_result, reference):
 
 
     signalp_result = signalp_result.split('/')[1]
-    with open('intermediate/add_Seqlength_'+signalp_result, 'w') as f:
+    with open( direction_path + '/add_Seqlength_'+signalp_result, 'w') as f:
 
         f.writelines(add_length_result)
     f.close()
 
-def filter_signalp(signalp_result):
+def filter_signalp(signalp_result, direction_path):
     signalp_result = signalp_result + '_summary.signalp5'
     signalp_result_name_blocks = signalp_result.split('/')
-    path = signalp_result_name_blocks[0]
 
-    with open('intermediate/add_Seqlength_'+signalp_result_name_blocks[1], 'r') as file:
+    with open(direction_path + '/add_Seqlength_'+signalp_result_name_blocks[1], 'r') as file:
         input_results = file.readlines()
     file.close()
 
@@ -140,22 +161,26 @@ def my_signalp_by_cdhit(cdhit_result, signalp_org, signalp_format, signalp_resul
     elapsed = done - start
     print("signalp run: " + str(elapsed/60.0))
 
-def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_result):
+def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_result, direction_path):
+    out_id = 'chosen_signalped_ids.txt'
+    fasta_file = 'chosen_signalp_seq.faa'
+    extract_in_file_name =  direction_path + '/' + 'filtered_' + signalp_result
     signalp_command = 'signalp -fasta ' + getorf_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
     start = time.time()
     os.system(signalp_command)
-    seq_len_signalp(signalp_result=signalp_result, reference=getorf_result)
+    seq_len_signalp(signalp_result=signalp_result, reference=getorf_result, direction_path = direction_path)
     filter_signalp(signalp_result)
+    assemble_fasta(direction_path, extract_in_file_name=extract_in_file_name, out_id_file_name=out_id, reference=getorf_result, fasta_file=fasta_file)
     done = time.time()
     elapsed = done - start
     print("signalp run: " + str(elapsed/60.0))
 
-def my_tmhmm_cdhit(path, reference, extract_in_file_name):
+def my_tmhmm_cdhit(path, reference, extract_in_file_name, direction_path):
     out_id = 'chosen_ids.txt'
     fasta_file = 'chosen_seq4tmhmm.faa'
     assemble_fasta(path, extract_in_file_name=extract_in_file_name, out_id_file_name=out_id, reference=reference, fasta_file=fasta_file)
     tmhmm_input = path + '/' + fasta_file
-    output = 'intermediate/tmhmm_result.txt'
+    output = direction_path + '/tmhmm_result.txt'
     tmhmm_command = './tmhmm-2.0c/bin/tmhmm ' + tmhmm_input + ' -short > ' + output
     print("tmhmm coming.......")
     try:
@@ -164,8 +189,8 @@ def my_tmhmm_cdhit(path, reference, extract_in_file_name):
     except:
         print("tmhmm error")
 
-def my_tmhmm_getorf(getorf_result):
-    output = 'intermediate/tmhmm_result.txt'
+def my_tmhmm_getorf(getorf_result, direction_path):
+    output = direction_path + '/tmhmm_result.txt'
     tmhmm_command = './tmhmm-2.0c/bin/tmhmm ' + getorf_result + ' -short > ' + output
     print("tmhmm coming.......")
     try:
@@ -173,15 +198,17 @@ def my_tmhmm_getorf(getorf_result):
         os.system('rm -rf TMHMM_*')
     except:
         print("tmhmm error")
+    seq_len_tmhmm(tmhmm_result=output, reference=getorf_result, direction_path=direction_path)
 
-def main():
+
+def all_tasks():
     path = 'intermediate'
     try:
         os.mkdir(path)
     except:
         pass
-
     parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--direction_path", type=str, required=True)
     parser.add_argument("-g", "--getorf", type=bool, required=False, default=False)
     parser.add_argument("-gi", "--getorf_in", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.fna')
     parser.add_argument("-gr", "--getorf_result", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')
@@ -202,17 +229,6 @@ def main():
     parser.add_argument("-caL", "--cdhit_aL", type=str, required=False, default="0.95")
     parser.add_argument("-cg", "--cdhit_g", type=str, required=False, default="1")
 
-    parser.add_argument("-d", "--diamondp", type=bool, required=False, default=False)
-    parser.add_argument("-dd", "--dia_db", type=str, required=False, default='/mnt/array2/smallproteins/database/DM_database/SmProt_KnownDatabase.dmnd')
-    parser.add_argument("-dr", "--dia_result", type=str, required=False, default="cdhited_diamond_KnownDatabase.txt")
-
-    parser.add_argument("-b", '--blastp', type=bool, required=False, default=False)
-    parser.add_argument("-bd", "--blastp_db", type=str, required=False, default='/mnt/array2/smallproteins/database/Kyrpides_small_proteins/Homologs_of_All_4539_Families/cluster_homologs_db')
-    parser.add_argument("-bo", "--blastp_outfmt", type=str, required=False, default='6 std qcovs qcovhsp')
-    parser.add_argument("-be", '--blastp_evalue', type=str, required=False, default='10')
-    parser.add_argument("-bm", "--max_target_seqs", type=str, required=False, default='1')
-    parser.add_argument("-bt", "--blastp_num_threads", type=str, required=False, default='15')
-    parser.add_argument("-br", "--blastp_result", type=str, required=False, default='DHIT_query_KypridesHomologs_db_evalue-le10.blastpOUT')
 
     parser.add_argument("-s", "--signalp", type=bool, required=False, default=False)
     parser.add_argument("-sg", "--signalp_getorf", type=bool, required=False, default=False)
@@ -294,6 +310,57 @@ def main():
     done_tmhmm = time.time()
     elapsed = done_tmhmm - start_tmhmm
     print("tmhmm run: " + str(elapsed/60.0))
+
+class myThread (threading.Thread):
+    def __init__(self, threadID, name, task_name, getorf_result, direction_path):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.task_name = task_name
+        self.getorf_result = getorf_result
+        self.direction_path = direction_path
+
+    def run(self):
+        if self.task_name == 'tmhmm':
+            start_tmhmm = time.time()
+            my_tmhmm_getorf(self.getorf_result)
+            done_tmhmm = time.time()
+            elapsed = done_tmhmm - start_tmhmm
+            print("tmhmm run: " + str(elapsed / 60.0))
+
+        elif self.task_name == 'signalp':
+            my_signalp_by_getorf(self.getorf_result, signalp_org='gram-', signalp_format='short', signalp_result="signalp_result", direction_path=self.direction_path)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--direction_path", type=str, required=True)
+    parser.add_argument("-gi", "--getorf_in", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.fna')
+    parser.add_argument("-gr", "--getorf_result", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')
+    parser.add_argument("-gt", "--getorf_table", type=str, required=False, default='1')
+    parser.add_argument("-gmi", "--getorf_minsize", type=str, required=False, default='15')
+    parser.add_argument("-gma", "--getorf_maxsize", type=str, required=False, default='50')
+    args = parser.parse_args()
+
+    path = args.direction_path
+    try:
+        os.mkdir(path)
+    except:
+        pass
+
+    args.getorf_result = path + '/' + args.getorf_result
+
+    start_getorf = time.time()
+    my_getorf(args.getorf_in, args.getorf_result, args.getorf_table, args.getorf_minsize, args.getorf_maxsize)
+    done_getorf = time.time()
+    elapsed = done_getorf - start_getorf
+    print("getorf run: " + str(elapsed/60.0))
+
+    thread1 = myThread(1, 'Thread-1', 'tmhmm', args.getorf_result, args.direction_path)
+    thread2 = myThread(2, 'Thread-2', 'singalp', args.getorf_result, args.direction_path)
+
+    thread1.start()
+    thread2.start()
 
 if __name__ == '__main__':
     main()
