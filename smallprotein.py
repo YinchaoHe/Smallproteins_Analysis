@@ -357,7 +357,7 @@ def main():
     print("getorf run: " + str(elapsed/60.0))
 
     thread1 = myThread(1, 'Thread-1', 'tmhmm', args.getorf_result, args.direction_path)
-    thread2 = myThread(2, 'Thread-2', 'singalp', args.getorf_result, args.direction_path)
+    thread2 = myThread(2, 'Thread-2', 'signalp', args.getorf_result, args.direction_path)
 
     thread1.start()
     thread2.start()
