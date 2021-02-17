@@ -323,7 +323,7 @@ class myThread (threading.Thread):
     def run(self):
         if self.task_name == 'tmhmm':
             start_tmhmm = time.time()
-            my_tmhmm_getorf(self.getorf_result)
+            my_tmhmm_getorf(self.getorf_result, self.direction_path)
             done_tmhmm = time.time()
             elapsed = done_tmhmm - start_tmhmm
             print("tmhmm run: " + str(elapsed / 60.0))
