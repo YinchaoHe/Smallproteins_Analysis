@@ -311,7 +311,7 @@ def all_tasks():
     elapsed = done_tmhmm - start_tmhmm
     print("tmhmm run: " + str(elapsed/60.0))
 
-class myThread (threading.Thread):
+class myThread(threading.Thread):
     def __init__(self, threadID, name, task_name, getorf_result, direction_path):
         threading.Thread.__init__(self)
         self.threadID = threadID
@@ -329,7 +329,7 @@ class myThread (threading.Thread):
             print("tmhmm run: " + str(elapsed / 60.0))
 
         elif self.task_name == 'signalp':
-            my_signalp_by_getorf(self.getorf_result, signalp_org='gram-', signalp_format='short', signalp_result="signalp_result", direction_path=self.direction_path)
+            my_signalp_by_getorf(self.getorf_result, signalp_org='gram-', signalp_format='short', signalp_result= self.direction_path + "/signalp_result", direction_path=self.direction_path)
 
 
 def main():
@@ -361,6 +361,14 @@ def main():
 
     thread1.start()
     thread2.start()
+
+    threads = []
+    threads.append(thread1)
+    threads.append(thread2)
+
+    for t in threads:
+        t.join()
+    print("Exiting Main Thread")
 
 if __name__ == '__main__':
     main()
