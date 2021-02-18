@@ -16,7 +16,7 @@ def combination_signalp_info(signalp_result, reference, direction_path):
     record_dic = SeqIO.to_dict(SeqIO.parse(reference, "fasta"))
 
     n_fasta_seqs = []
-    for signalp_result_info in signalp_result_infos:
+    for signalp_result_info in signalp_result_infos[2:]:
         id = signalp_result_info.split()[0]
         tag = signalp_result_info.split()[1]
         if tag != 'OTHER':
@@ -29,7 +29,6 @@ def combination_signalp_info(signalp_result, reference, direction_path):
                 if '?' in CS_Position:
                     CS_Position = '000'
                 CS_Position =  'CS(Position)=' + CS_Position
-                print(CS_Position)
                 position_info = record_dic[id].description.split('[')[1].split(']')[0]
                 rec = SeqRecord(
                     Seq(str(record_dic[id].seq)),
@@ -44,7 +43,6 @@ def combination_tmhmm_info(tmhmm_result, reference, direction_path):
        tmhmm_result_infos = file.readlines()
     file.close()
     record_dic = SeqIO.to_dict(SeqIO.parse(reference, "fasta"))
-    print(record_dic.keys())
 
     n_fasta_seqs = []
     for tmhmm_result_info in tmhmm_result_infos:
@@ -270,5 +268,5 @@ def main():
     print("Exiting Main Thread")
 
 if __name__ == '__main__':
-    main()
+    combination_tmhmm_info(tmhmm_result='test/tmhmm_result.txt', reference='test/GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa', direction_path='test')
 
