@@ -50,7 +50,7 @@ def combination_tmhmm_info(tmhmm_result, reference, direction_path):
     for tmhmm_result_info in tmhmm_result_infos:
         id = tmhmm_result_info.split()[0]
         PredHel_value = tmhmm_result_info.split()[4].split("PredHel=")[1]
-        if PredHel_value > 0:
+        if int(PredHel_value) > 0:
             if id in record_dic.keys():
                 length = tmhmm_result_info.split()[1]
                 ExpAA = tmhmm_result_info.split()[2]
