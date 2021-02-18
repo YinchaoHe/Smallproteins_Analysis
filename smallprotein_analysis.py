@@ -268,5 +268,4 @@ def main():
     print("Exiting Main Thread")
 
 if __name__ == '__main__':
-    combination_tmhmm_info(tmhmm_result='test/tmhmm_result.txt', reference='test/GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa', direction_path='test')
-
+    main()
