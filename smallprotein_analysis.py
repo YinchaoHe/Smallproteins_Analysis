@@ -25,8 +25,11 @@ def combination_signalp_info(signalp_result, reference, direction_path):
                 TAT = 'TAT(Tat/SPI)=' + signalp_result_info.split()[3]
                 LIPO = 'LIPO(Sec/SPII)=' + signalp_result_info.split()[4]
                 OTHER = 'OTHER=' + signalp_result_info.split()[5]
-                CS_Position = signalp_result_info.split()[8].split('.')[0]
-                if '?' in CS_Position:
+                try:
+                    CS_Position = signalp_result_info.split('CS pos: ')[1].split('.')[0]
+                    if '?' in CS_Position:
+                        CS_Position = '000'
+                except:
                     CS_Position = '000'
                 CS_Position =  'CS(Position)=' + CS_Position
                 position_info = record_dic[id].description.split('[')[1].split(']')[0]
