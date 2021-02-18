@@ -5,128 +5,65 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import time
 import threading
-def extract_ids(path, in_file_name, out_id_file_name):
-    try:
-        os.mkdir(path + '/txt_processing')
-    except:
-        pass
-    with open(in_file_name , 'r') as file:
-        input_results = file.readlines()
-    file.close()
 
-    target_ids = []
-    output_file = open(path + '/txt_processing/' + out_id_file_name, 'w')
-    if 'signalp5' in in_file_name:
-        for input_result in input_results[2:]:
-            id = input_result.split()[0]
-            target_ids.append(id)
-            output_file.write(id + '\n')
-        output_file.close()
-    else:
-        for input_result in input_results:
-            id = input_result.split()[0]
-            target_ids.append(id)
-            output_file.write(id + '\n')
-        output_file.close()
 
-def seq_len_tmhmm(tmhmm_result, reference, direction_path):
-    with open(tmhmm_result, 'r') as file:
-       input_results = file.readlines()
-    file.close()
-    records = list(SeqIO.parse(reference, "fasta"))
-    add_length_result = []
-
-    seq_dic = {}
-    for record in records:
-        seq_dic[record.id] = str(len(record.seq))
-
-    for input_result in input_results:
-        id = input_result.split()[0]
-        if id in seq_dic.keys():
-            leng_seq = input_result.split("\n")[0] + " " * 4 + seq_dic[id] + '\n'
-            add_length_result.append(leng_seq)
-
-    tmhmm_result = tmhmm_result.split('/')[1]
-    with open( direction_path + '/add_Seqlength_'+ tmhmm_result, 'w') as f:
-        f.writelines(add_length_result)
-    f.close()
-
-def seq_len_signalp(signalp_result, reference, direction_path):
+def combination_signalp_info(signalp_result, reference, direction_path):
     signalp_result = signalp_result + '_summary.signalp5'
     with open(signalp_result, 'r') as file:
-       input_results = file.readlines()
+        signalp_result_infos = file.readlines()
     file.close()
 
-    records = list(SeqIO.parse(reference, "fasta"))
+    record_dic = SeqIO.to_dict(SeqIO.parse(reference, "fasta"))
 
-    add_length_result = [input_results[0]]
-    title = input_results[1].split("\n")[0] + " " * 4 + 'sequence_length' + '\n'
-    add_length_result.append(title)
-
-    seq_dic = {}
-    for record in records:
-        seq_dic[record.id] = str(len(record.seq))
-
-    for input_result in input_results[2:]:
-        id = input_result.split()[0]
-        if id in seq_dic.keys():
-            leng_seq = input_result.split("\n")[0] + " " * 4 + seq_dic[id] + '\n'
-            add_length_result.append(leng_seq)
-
-
-
-    signalp_result = signalp_result.split('/')[1]
-    with open( direction_path + '/add_Seqlength_'+signalp_result, 'w') as f:
-
-        f.writelines(add_length_result)
-    f.close()
-
-def filter_signalp(signalp_result, direction_path):
-    signalp_result = signalp_result + '_summary.signalp5'
-    signalp_result_name_blocks = signalp_result.split('/')
-
-    with open(direction_path + '/add_Seqlength_'+signalp_result_name_blocks[1], 'r') as file:
-        input_results = file.readlines()
-    file.close()
-
-    signalp_result_name_blocks = signalp_result.split('/')
-    path = signalp_result_name_blocks[0]
-    filter_signalp_result = 'filtered_' + signalp_result_name_blocks[1]
-    output_file = open( path + '/' + filter_signalp_result, 'w')
-    output_file.write(input_results[0])
-    output_file.write(input_results[1])
-
-    for input_result in input_results[2:]:
-        prediction = input_result.split()[1]
-        if prediction != 'OTHER':
-            output_file.write(input_result)
-    output_file.close()
-
-
-def assemble_fasta(path, extract_in_file_name, out_id_file_name, fasta_file, reference):
-    extract_ids(path, extract_in_file_name, out_id_file_name)
-    with open(path + '/txt_processing/' + out_id_file_name, 'r') as f:
-        ids = f.readlines()
-    f.close()
-
-    search_ids = []
-    for id in ids:
-        id = id.split('\n')[0]
-        search_ids.append(id)
-
-    records = list(SeqIO.parse(reference, "fasta"))
     n_fasta_seqs = []
-    for record in records:
-        if record.id in search_ids:
-#           print(record)
-            rec = SeqRecord(
-                Seq(str(record.seq)),
-                id = record.id,
-                name = record.name,
-                description = record.description,
-            )
-            n_fasta_seqs.append(rec)
-    SeqIO.write(n_fasta_seqs, path + '/' + fasta_file, "fasta")
+    for signalp_result_info in signalp_result_infos:
+        id = signalp_result_info.split()[0]
+        tag = signalp_result_info.split()[1]
+        if tag != 'OTHER':
+            if id in record_dic.keys():
+                SP = 'SP(Sec/SPI)=' + signalp_result_info.split()[2]
+                TAT = 'TAT(Tat/SPI)=' + signalp_result_info.split()[3]
+                LIPO = 'LIPO(Sec/SPII)=' + signalp_result_info.split()[4]
+                OTHER = 'OTHER=' + signalp_result_info.split()[5]
+                CS_Position = signalp_result_info.split()[8].split('.')[0]
+                if '?' in CS_Position:
+                    CS_Position = '000'
+                CS_Position =  'CS(Position)=' + CS_Position
+                print(CS_Position)
+                position_info = record_dic[id].description.split('[')[1].split(']')[0]
+                rec = SeqRecord(
+                    Seq(str(record_dic[id].seq)),
+                    id=record_dic[id].id + '|' + position_info + '|signalp|' + SP + '|' + TAT + '|' + LIPO + '|' + OTHER + '|' + CS_Position,
+                    name=record_dic[id].name,
+                )
+                n_fasta_seqs.append(rec)
+    SeqIO.write(n_fasta_seqs, direction_path + '/signalp_info_combined.faa', "fasta")
+    
+def combination_tmhmm_info(tmhmm_result, reference, direction_path):
+    with open(tmhmm_result, 'r') as file:
+       tmhmm_result_infos = file.readlines()
+    file.close()
+    record_dic = SeqIO.to_dict(SeqIO.parse(reference, "fasta"))
+    print(record_dic.keys())
+
+    n_fasta_seqs = []
+    for tmhmm_result_info in tmhmm_result_infos:
+        id = tmhmm_result_info.split()[0]
+        PredHel_value = tmhmm_result_info.split()[4].split("PredHel=")[1]
+        if PredHel_value > 0:
+            if id in record_dic.keys():
+                length = tmhmm_result_info.split()[1]
+                ExpAA = tmhmm_result_info.split()[2]
+                First60 = tmhmm_result_info.split()[3]
+                PredHel = tmhmm_result_info.split()[4]
+                position_info = record_dic[id].description.split('[')[1].split(']')[0]
+                rec = SeqRecord(
+                    Seq(str(record_dic[id].seq)),
+                    id=record_dic[id].id+'|'+position_info+'|tmhmm|'+length+'|'+ExpAA+'|'+First60+'|'+PredHel,
+                    name=record_dic[id].name,
+                )
+                n_fasta_seqs.append(rec)
+    SeqIO.write(n_fasta_seqs, direction_path + '/tmhmm_info_combined.faa', 'fasta')
 
 def count_fasta(path, fasta_file):
     records = list(SeqIO.parse(path + '/' + fasta_file, "fasta"))
@@ -142,63 +79,22 @@ def my_cdhit(cdhit_input, cdhit_result, cdhit_n, cdhit_p, cdhit_c, cdhit_d, cdhi
     cdhit_command = cdhit_command +  ' ' + '-c' + ' ' + cdhit_c + ' ' + '-d' + ' ' + cdhit_d + ' ' + '-M' + ' ' + cdhit_M + ' ' + '-l' + ' ' + cdhit_l + ' ' + '-s' + ' ' + cdhit_s + ' ' + '-aL' + ' ' + cdhit_aL + ' ' + '-g' + ' ' + cdhit_g
     os.system(cdhit_command)
 
-def my_diamond_blastp(dia_db, cdhit_result, dia_result):
-    diamond_blastp_command = 'diamond blastp --db ' + dia_db + ' ' + '-q' + ' ' + cdhit_result + ' ' + '-o' + ' ' + dia_result
-    os.system(diamond_blastp_command)
-
-def my_blastp(blastp_db, cdhit_result, blastp_outfmt, blastp_evalue, blastp_max_target_seqs, blastp_num_threads, blastp_result):
-    blastp_command = 'blastp -db ' + blastp_db + ' -query ' + cdhit_result + ' -outfmt \"' + blastp_outfmt + '\" -evalue ' + blastp_evalue
-    blastp_command = blastp_command + ' -max_target_seqs ' + blastp_max_target_seqs + ' -num_threads ' + blastp_num_threads + ' -out ' + blastp_result
-    os.system(blastp_command)
-
-def my_signalp_by_cdhit(cdhit_result, signalp_org, signalp_format, signalp_result):
-    signalp_command = 'signalp -fasta ' + cdhit_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
-    start = time.time()
-    os.system(signalp_command)
-    seq_len_signalp(signalp_result=signalp_result, reference=cdhit_result)
-    filter_signalp(signalp_result)
-    done = time.time()
-    elapsed = done - start
-    print("signalp run: " + str(elapsed/60.0))
 
 def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_result, direction_path):
-    out_id = 'chosen_signalped_ids.txt'
-    fasta_file = 'chosen_signalp_seq.faa'
-    extract_in_file_name =  direction_path + '/' + 'filtered_' + signalp_result
     signalp_command = 'signalp -fasta ' + getorf_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
-    start = time.time()
     os.system(signalp_command)
-    seq_len_signalp(signalp_result=signalp_result, reference=getorf_result, direction_path = direction_path)
-    filter_signalp(signalp_result)
-    assemble_fasta(direction_path, extract_in_file_name=extract_in_file_name, out_id_file_name=out_id, reference=getorf_result, fasta_file=fasta_file)
-    done = time.time()
-    elapsed = done - start
-    print("signalp run: " + str(elapsed/60.0))
-
-def my_tmhmm_cdhit(path, reference, extract_in_file_name, direction_path):
-    out_id = 'chosen_ids.txt'
-    fasta_file = 'chosen_seq4tmhmm.faa'
-    assemble_fasta(path, extract_in_file_name=extract_in_file_name, out_id_file_name=out_id, reference=reference, fasta_file=fasta_file)
-    tmhmm_input = path + '/' + fasta_file
-    output = direction_path + '/tmhmm_result.txt'
-    tmhmm_command = './tmhmm-2.0c/bin/tmhmm ' + tmhmm_input + ' -short > ' + output
-    print("tmhmm coming.......")
-    try:
-        os.system(tmhmm_command)
-        os.system('rm -rf TMHMM_*')
-    except:
-        print("tmhmm error")
+    combination_signalp_info(signalp_result=signalp_result, reference=getorf_result, direction_path=direction_path)
 
 def my_tmhmm_getorf(getorf_result, direction_path):
-    output = direction_path + '/tmhmm_result.txt'
-    tmhmm_command = './tmhmm-2.0c/bin/tmhmm ' + getorf_result + ' -short > ' + output
+    tmhmm_result = direction_path + '/tmhmm_result.txt'
+    tmhmm_command = './tmhmm-2.0c/bin/tmhmm ' + getorf_result + ' -short > ' + tmhmm_result
     print("tmhmm coming.......")
     try:
         os.system(tmhmm_command)
         os.system('rm -rf TMHMM_*')
     except:
         print("tmhmm error")
-    seq_len_tmhmm(tmhmm_result=output, reference=getorf_result, direction_path=direction_path)
+    combination_tmhmm_info(tmhmm_result=tmhmm_result, reference=getorf_result, direction_path=direction_path)
 
 
 def all_tasks():
@@ -329,8 +225,11 @@ class myThread(threading.Thread):
             print("tmhmm run: " + str(elapsed / 60.0))
 
         elif self.task_name == 'signalp':
+            start_signalp = time.time()
             my_signalp_by_getorf(self.getorf_result, signalp_org='gram-', signalp_format='short', signalp_result= self.direction_path + "/signalp_result", direction_path=self.direction_path)
-
+            done_signalp = time.time()
+            elapsed = done_signalp - start_signalp
+            print("signalp run: " + str(elapsed / 60.0))
 
 def main():
     parser = argparse.ArgumentParser()
@@ -372,3 +271,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
