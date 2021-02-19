@@ -35,8 +35,9 @@ def combination_signalp_info(signalp_result, reference, direction_path):
                 position_info = record_dic[id].description.split('[')[1].split(']')[0]
                 rec = SeqRecord(
                     Seq(str(record_dic[id].seq)),
-                    id=record_dic[id].id + '|' + position_info + '|signalp|' + SP + '|' + TAT + '|' + LIPO + '|' + OTHER + '|' + CS_Position,
+                    id=record_dic[id].id,
                     name=record_dic[id].name,
+                    description= position_info + '|signalp|' + SP + '|' + TAT + '|' + LIPO + '|' + OTHER + '|' + CS_Position,
                 )
                 n_fasta_seqs.append(rec)
     SeqIO.write(n_fasta_seqs, direction_path + '/signalp_info_combined.faa', "fasta")
@@ -60,8 +61,9 @@ def combination_tmhmm_info(tmhmm_result, reference, direction_path):
                 position_info = record_dic[id].description.split('[')[1].split(']')[0]
                 rec = SeqRecord(
                     Seq(str(record_dic[id].seq)),
-                    id=record_dic[id].id+'|'+position_info+'|tmhmm|'+length+'|'+ExpAA+'|'+First60+'|'+PredHel,
+                    id=record_dic[id].id,
                     name=record_dic[id].name,
+                    description=position_info+'|tmhmm|'+length+'|'+ExpAA+'|'+First60+'|'+PredHel,
                 )
                 n_fasta_seqs.append(rec)
     SeqIO.write(n_fasta_seqs, direction_path + '/tmhmm_info_combined.faa', 'fasta')
