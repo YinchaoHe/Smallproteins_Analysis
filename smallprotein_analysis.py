@@ -29,7 +29,7 @@ def combination_signalp_info(signalp_result, reference, direction_path):
                     CS_Position = signalp_result_info.split('CS pos: ')[1].split('.')[0]
                     if '?' in CS_Position:
                         CS_Position = '000'
-                except:
+                except IndexError:
                     CS_Position = '000'
                 CS_Position =  'CS(Position)=' + CS_Position
                 position_info = record_dic[id].description.split('[')[1].split(']')[0]
