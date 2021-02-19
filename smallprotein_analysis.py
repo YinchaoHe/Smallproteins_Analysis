@@ -240,8 +240,8 @@ def main():
     parser.add_argument("-gi", "--getorf_in", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.fna')
     parser.add_argument("-gr", "--getorf_result", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')
     parser.add_argument("-gt", "--getorf_table", type=str, required=False, default='1')
-    parser.add_argument("-gmi", "--getorf_minsize", type=str, required=False, default='15')
-    parser.add_argument("-gma", "--getorf_maxsize", type=str, required=False, default='50')
+    parser.add_argument("-gmi", "--getorf_minsize", type=str, required=False, default='45')
+    parser.add_argument("-gma", "--getorf_maxsize", type=str, required=False, default='150')
     args = parser.parse_args()
 
     path = args.direction_path
