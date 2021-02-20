@@ -258,19 +258,32 @@ def main():
     elapsed = done_getorf - start_getorf
     print("getorf run: " + str(elapsed/60.0))
 
-    thread1 = myThread(1, 'Thread-1', 'tmhmm', args.getorf_result, args.direction_path)
-    thread2 = myThread(2, 'Thread-2', 'signalp', args.getorf_result, args.direction_path)
+    # thread1 = myThread(1, 'Thread-1', 'tmhmm', args.getorf_result, args.direction_path)
+    # thread2 = myThread(2, 'Thread-2', 'signalp', args.getorf_result, args.direction_path)
+    #
+    # thread1.start()
+    # thread2.start()
+    #
+    # threads = []
+    # threads.append(thread1)
+    # threads.append(thread2)
+    #
+    # for t in threads:
+    #     t.join()
+    # print("Exiting Main Thread")
 
-    thread1.start()
-    thread2.start()
+    start_tmhmm = time.time()
+    my_tmhmm_getorf(args.getorf_result, args.direction_path)
+    done_tmhmm = time.time()
+    elapsed = done_tmhmm - start_tmhmm
+    print("tmhmm run: " + str(elapsed / 60.0))
 
-    threads = []
-    threads.append(thread1)
-    threads.append(thread2)
-
-    for t in threads:
-        t.join()
-    print("Exiting Main Thread")
+    start_signalp = time.time()
+    my_signalp_by_getorf(args.getorf_result, signalp_org='gram-', signalp_format='short',
+                         signalp_result=args.direction_path + "/signalp_result", direction_path=args.direction_path)
+    done_signalp = time.time()
+    elapsed = done_signalp - start_signalp
+    print("signalp run: " + str(elapsed / 60.0))
 
 if __name__ == '__main__':
     main()
