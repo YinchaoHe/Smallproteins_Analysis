@@ -14,6 +14,7 @@ def combination_signalp_info(signalp_result, reference, direction_path):
     record_dic = SeqIO.to_dict(SeqIO.parse(reference, "fasta"))
 
     n_fasta_seqs = []
+    cutted_fasta_seqs = []
     for signalp_result_info in signalp_result_infos[2:]:
         id = signalp_result_info.split()[0]
         tag = signalp_result_info.split()[1]
@@ -24,12 +25,14 @@ def combination_signalp_info(signalp_result, reference, direction_path):
                 LIPO = 'LIPO(Sec/SPII)=' + signalp_result_info.split()[4]
                 OTHER = 'OTHER=' + signalp_result_info.split()[5]
                 try:
-                    CS_Position = signalp_result_info.split('CS pos: ')[1].split('.')[0]
-                    if '?' in CS_Position:
-                        CS_Position = '000'
+                    origi_CS_Position = signalp_result_info.split('CS pos: ')[1].split('.')[0]
+                    if '?' in origi_CS_Position:
+                        check_CS_Position = '000'
+                    else:
+                        check_CS_Position = origi_CS_Position
                 except IndexError:
-                    CS_Position = '000'
-                CS_Position =  'CS(Position)=' + CS_Position
+                    check_CS_Position = '000'
+                CS_Position =  'CS(Position)=' + check_CS_Position
                 position_info = record_dic[id].description.split('[')[1].split(']')[0]
                 rec = SeqRecord(
                     Seq(str(record_dic[id].seq)),
@@ -38,8 +41,21 @@ def combination_signalp_info(signalp_result, reference, direction_path):
                     description= position_info + '|signalp|' + SP + '|' + TAT + '|' + LIPO + '|' + OTHER + '|' + CS_Position,
                 )
                 n_fasta_seqs.append(rec)
-    SeqIO.write(n_fasta_seqs, direction_path + '/signalp_info_combined.faa', "fasta")
 
+                if check_CS_Position != '000':
+                    pos = int(check_CS_Position.split('-')[0])
+                    original_seq = str(record_dic[id].seq)
+                    cutted_seq = original_seq[pos:]
+                    cutted_rec = SeqRecord(
+                        Seq(cutted_seq),
+                        id=record_dic[id].id,
+                        name=record_dic[id].name,
+                        description=position_info + '|signalp|' + SP + '|' + TAT + '|' + LIPO + '|' + OTHER + '|' + CS_Position,
+                    )
+                    cutted_fasta_seqs.append(cutted_rec)
+
+    SeqIO.write(n_fasta_seqs, direction_path + '/signalp_info_combined.faa', "fasta")
+    SeqIO.write(cutted_fasta_seqs, direction_path + '/cutted_signalp_info_combined.faa', "fasta")
 
 def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_result, direction_path):
     signalp_command = 'signalp -fasta ' + getorf_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
@@ -72,3 +88,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # signalp_result = 'result_Feb18/signalp_result'
+    # getorf_result = 'result_Feb18/GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa'
+    # direction_path = 'mine'
+    # combination_signalp_info(signalp_result=signalp_result, reference=getorf_result, direction_path=direction_path)
