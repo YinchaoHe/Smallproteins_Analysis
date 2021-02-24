@@ -13,9 +13,10 @@ def combination_tmhmm_info(tmhmm_result, reference, direction_path):
 
     n_fasta_seqs = []
     for tmhmm_result_info in tmhmm_result_infos:
-        id = tmhmm_result_info.split()[0]
         PredHel_value = tmhmm_result_info.split()[4].split("PredHel=")[1]
         if int(PredHel_value) > 0:
+            id = tmhmm_result_info.split()[0]
+            pos_hel = tmhmm_result_info.split()[-1]
             if id in record_dic.keys():
                 length = tmhmm_result_info.split()[1]
                 ExpAA = tmhmm_result_info.split()[2]
@@ -26,7 +27,7 @@ def combination_tmhmm_info(tmhmm_result, reference, direction_path):
                     Seq(str(record_dic[id].seq)),
                     id=record_dic[id].id,
                     name=record_dic[id].name,
-                    description=position_info+'|tmhmm|'+length+'|'+ExpAA+'|'+First60+'|'+PredHel,
+                    description=position_info+'|tmhmm|'+length+'|'+ExpAA+'|'+First60+'|'+PredHel+ '|' +pos_hel,
                 )
                 n_fasta_seqs.append(rec)
     SeqIO.write(n_fasta_seqs, direction_path + '/tmhmm_info_combined.faa', 'fasta')
@@ -80,4 +81,5 @@ def main():
     print("tmhmm run: " + str(elapsed / 60.0))
 
 if __name__ == '__main__':
-    main()
+    #main()
+    combination_tmhmm_info(tmhmm_result='result_Feb18/tmhmm_result.txt', direction_path= 'result_Feb18', reference='result_Feb18/GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')
