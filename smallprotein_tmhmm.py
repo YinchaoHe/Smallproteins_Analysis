@@ -81,5 +81,5 @@ def main():
     print("tmhmm run: " + str(elapsed / 60.0))
 
 if __name__ == '__main__':
-    #main()
-    combination_tmhmm_info(tmhmm_result='result_Feb18/tmhmm_result.txt', direction_path= 'result_Feb18', reference='result_Feb18/GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')
+    main()
+    #combination_tmhmm_info(tmhmm_result='result_Feb18/tmhmm_result.txt', direction_path= 'result_Feb18', reference='result_Feb18/GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')

@@ -55,7 +55,7 @@ def combination_signalp_info(signalp_result, reference, direction_path):
                     cutted_fasta_seqs.append(cutted_rec)
 
     SeqIO.write(n_fasta_seqs, direction_path + '/signalp_info_combined.faa', "fasta")
-    SeqIO.write(cutted_fasta_seqs, direction_path + '/cutted_signalp_info_combined.faa', "fasta")
+    SeqIO.write(cutted_fasta_seqs, direction_path + '/cut_signalp_info_combined.faa', "fasta")
 
 def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_result, direction_path):
     signalp_command = 'signalp -fasta ' + getorf_result + ' ' + '-org' + ' ' + signalp_org + ' ' + '-format' + ' ' + signalp_format + ' ' + '-prefix' + ' ' + signalp_result
