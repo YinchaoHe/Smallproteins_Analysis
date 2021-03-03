@@ -35,7 +35,7 @@ def combination_tmhmm_info(tmhmm_result, reference, direction_path):
 
 def my_tmhmm_getorf(getorf_result, direction_path):
     tmhmm_result = direction_path + '/tmhmm_result.txt'
-    tmhmm_command = './tmhmm-2.0c/bin/tmhmm ' + getorf_result + ' -short > ' + tmhmm_result
+    tmhmm_command = 'tmhmm ' + getorf_result + ' -short > ' + tmhmm_result
     print("tmhmm coming.......")
     try:
         os.system(tmhmm_command)
