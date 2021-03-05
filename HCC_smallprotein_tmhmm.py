@@ -50,25 +50,14 @@ def my_getorf(getorf_in, getorf_result, getorf_table, getorf_minsize, getorf_max
     getorf_command = getorf_command + ' ' + '-minsize' + ' ' + getorf_minsize + ' ' + '-maxsize' + ' ' + getorf_maxsize
     os.system(getorf_command)
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--direction_path", type=str, required=True)
-    parser.add_argument("-gi", "--getorf_in", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.fna')
-    parser.add_argument("-gr", "--getorf_result", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')
-    parser.add_argument("-gt", "--getorf_table", type=str, required=False, default='1')
-    parser.add_argument("-gmi", "--getorf_minsize", type=str, required=False, default='45')
-    parser.add_argument("-gma", "--getorf_maxsize", type=str, required=False, default='150')
-    args = parser.parse_args()
+def getorf_signalp(path, getorf_in, file):
+    getorf_result = path + '/' + file + '.ORF.15-50aa.faa'
+    getorf_table = '1'
+    getorf_minsize = '45'
+    getorf_maxsize = '150'
 
-    path = args.direction_path
-    try:
-        os.mkdir(path)
-    except:
-        pass
-
-    args.getorf_result = path + '/' + args.getorf_result
     start_getorf = time.time()
-    my_getorf(args.getorf_in, args.getorf_result, args.getorf_table, args.getorf_minsize, args.getorf_maxsize)
+    my_getorf(getorf_in, getorf_result, getorf_table, getorf_minsize, getorf_maxsize)
     done_getorf = time.time()
     elapsed = done_getorf - start_getorf
     print("getorf run: " + str(elapsed/60.0))
@@ -76,11 +65,43 @@ def main():
 
     #args.getorf_result = path + '/' + args.getorf_result
     start_tmhmm = time.time()
-    my_tmhmm_getorf(args.getorf_result, args.direction_path)
+    my_tmhmm_getorf(getorf_result, path)
     done_tmhmm = time.time()
     elapsed = done_tmhmm - start_tmhmm
     print("tmhmm run: " + str(elapsed / 60.0))
 
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--nargs', nargs='+', required=True)
+    args = parser.parse_args()
+    path = '/work/juancui/yinchaohe/geno_fastas/'
+    top_folders = args.nargs #['MGYG-HGUT-001', 'MGYG-HGUT-005','MGYG-HGUT-009','MGYG-HGUT-013','MGYG-HGUT-017','MGYG-HGUT-029','MGYG-HGUT-033']
+    for top_folder in top_folders:
+        top_folder_path = path + top_folder + '/'
+        print('first_level: ' + top_folder_path)
+        sec_level_folders = os.listdir(top_folder_path)
+        for sec_level_folder in sec_level_folders:
+            sec_level_folder_path = top_folder_path + sec_level_folder + '/'
+            print(' ' * 4 + 'sec_level_folder: ' + sec_level_folder_path)
+            third_level_folders = os.listdir(sec_level_folder_path)
+            for third_level_folder in third_level_folders:
+                third_level_folder_path = sec_level_folder_path + third_level_folder + '/'
+                print(' ' * 8 + 'third_level_folder: ' + third_level_folder_path)
+                forth_level_folders = os.listdir(third_level_folder_path)
+                for forth_level_folder in forth_level_folders:
+                    forth_level_folder_path = third_level_folder_path + forth_level_folder + '/'
+                    print(' '*12 + 'forth_level_folder: ' + forth_level_folder_path)
+                    files = os.listdir(forth_level_folder_path)
+                    for file in files:
+                        file_path = forth_level_folder_path + file
+                        try:
+                            getorf_signalp(path=forth_level_folder_path, getorf_in=file_path, file=file)
+                        except:
+                            with open('getorf_signalp_error_report.txt', 'a+') as f:
+                                f.write(file_path + '\n')
+                            f.close()
+
+
 if __name__ == '__main__':
     main()
-    #combination_tmhmm_info(tmhmm_result='result_Feb18/tmhmm_result.txt', direction_path= 'result_Feb18', reference='result_Feb18/GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')
