@@ -93,14 +93,18 @@ def main():
                     forth_level_folder_path = third_level_folder_path + forth_level_folder + '/'
                     print(' '*12 + 'forth_level_folder: ' + forth_level_folder_path)
                     files = os.listdir(forth_level_folder_path)
-                    for file in files:
-                        file_path = forth_level_folder_path + file
-                        try:
-                            getorf_signalp(path=forth_level_folder_path, getorf_in=file_path, file=file)
-                        except:
-                            with open('getorf_signalp_error_report.txt', 'a+') as f:
-                                f.write(file_path + '\n')
-                            f.close()
+                    if len(files) < 2:
+                        for file in files:
+                            file_path = forth_level_folder_path + file
+                            print(' '*16 + 'file_path: ' + file_path)
+                            command = 'echo ' + file_path
+                            os.system(command)
+                            try:
+                                getorf_signalp(path=forth_level_folder_path, getorf_in=file_path, file=file)
+                            except:
+                                with open('getorf_signalp_error_report.txt', 'a+') as f:
+                                    f.write(file_path + '\n')
+                                f.close()
 
 
 if __name__ == '__main__':

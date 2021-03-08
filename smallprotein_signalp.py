@@ -66,11 +66,7 @@ def my_signalp_by_getorf(getorf_result, signalp_org, signalp_format, signalp_res
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--direction_path", type=str, required=True)
-    parser.add_argument("-gi", "--getorf_in", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.fna')
     parser.add_argument("-gr", "--getorf_result", type=str, required=False, default= 'GCF_003018455.1_ASM301845v1_genomic.ORF.15-50aa.faa')
-    parser.add_argument("-gt", "--getorf_table", type=str, required=False, default='1')
-    parser.add_argument("-gmi", "--getorf_minsize", type=str, required=False, default='45')
-    parser.add_argument("-gma", "--getorf_maxsize", type=str, required=False, default='150')
     args = parser.parse_args()
 
     path = args.direction_path
@@ -80,7 +76,8 @@ def main():
         pass
 
     start_signalp = time.time()
-    my_signalp_by_getorf(args.getorf_result, signalp_org='gram-', signalp_format='short',
+    getorf_result = args.direction_path + '/' + args.getorf_result
+    my_signalp_by_getorf(getorf_result, signalp_org='gram-', signalp_format='short',
                          signalp_result=args.direction_path + "/signalp_result", direction_path=args.direction_path)
     done_signalp = time.time()
     elapsed = done_signalp - start_signalp

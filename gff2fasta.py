@@ -73,4 +73,6 @@ def main():
                         f.close()
 
 if __name__ == '__main__':
-    main()
+    #main()
+    file_path = 'test/GUT_GENOME160731.gff.gz'
+    gff2fa(file_path, 'test')

@@ -8,9 +8,10 @@
 #SBATCH --output=SLURM_report/output/python_tmhmm.%J.out
 
 module load python/3.8
+pip install Bio
 module load emboss/6.6
 module load tmhmm/2.0c
-python smallprotein_tmhmm.py -p HCC_test
+python HCC_smallprotein_tmhmm.py --nargs "MGYG-HGUT-001"
 echo "I am task '%J' on node `hostname`"
 
 
